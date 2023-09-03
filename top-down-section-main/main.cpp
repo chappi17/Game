@@ -1,5 +1,7 @@
 #include "raylib.h"
 #include "raymath.h"
+#include "Character.h"
+#include "prop.h"
 
 int main()
 {
@@ -8,87 +10,42 @@ int main()
     WindowSize[0] = 384;
     WindowSize[1] = 384;
 
-    InitWindow(WindowSize[0],WindowSize[1],"Classy Clan");
+    InitWindow(WindowSize[0], WindowSize[1], "Classy Clan");
 
-    Texture2D map = LoadTexture("nature_tileset/NewMap.png");
-    Vector2 mapPos = {0.0,0.0};
-   float speed = 4;
+    Texture2D map = LoadTexture("nature_tileset/OpenWorldMap24x24.png");
+    Vector2 mapPos = {0.0, 0.0};
+    const float mapScale = 4.0f;
 
-   Texture2D knight = LoadTexture("characters/knight_idle_spritesheet.png");
-   Texture2D knight_idle = LoadTexture("characters/knight_idle_spritesheet.png");
-   Texture2D knight_run = LoadTexture("characters/knight_run_spritesheet.png");
-   Vector2 knightPos = 
-   {
-    WindowSize[0]/2.0f - 4.0f* (0.5f * (float)knight.width/6.0f),
-    WindowSize[1]/2.0f - 4.0f* (0.5f * (float)knight.height)
-   };
-
-// 1 : facing right  -1: facing left
-   float rightLeft = 1.0f;
- 
-
-   // animation variables
-float runningTime= 0;
-int frame =0;
-const int maxframes = 6;
-// if updateTime is smaller -> fast
-const float updateTime = 1.0f/24.0f;
-
-SetTargetFPS(60);
+    Character knight(WindowSize[0],WindowSize[1]);
+    Prop rock= {Vector2{0.0f,0.0f},LoadTexture("nature_tileset/Rock.png")};
+  
+    SetTargetFPS(60);
     while (!WindowShouldClose())
     {
         BeginDrawing();
         ClearBackground(WHITE);
 
-        Vector2 direction={};
-        if (IsKeyDown(KEY_A)) direction.x -= 1.0;
-        if (IsKeyDown(KEY_D)) direction.x += 1.0;
-        if (IsKeyDown(KEY_W)) direction.y -= 1.0;
-        if (IsKeyDown(KEY_S)) direction.y += 1.0;
-        if(Vector2Length(direction) != 0.0)
-        {
-            // set mapPos = mapPos - direction
-            // set Scale = normalize(direction), speed
-            mapPos = Vector2Subtract(mapPos, Vector2Scale(Vector2Normalize(direction),speed));
+        mapPos = Vector2Scale(knight.GetwolrdPos(), -1.0f);
 
-            direction.x < 0.0f ? rightLeft = -1.0f : rightLeft = 1.0f;
-            knight = knight_run;
-        }
-        else 
-        {
-            knight = knight_idle;
-        }
+        DrawTextureEx(map, mapPos, 0.0f, mapScale, WHITE);
+
+        rock.Render(knight.GetwolrdPos());
 
 
-        DrawTextureEx(map,mapPos,0.0f,4.0,WHITE);
-        // update animation frame
-        runningTime += GetFrameTime();
-        if(runningTime >= updateTime)
-        {
-            frame++;
-            runningTime =0.0f;
+        knight.Tick(GetFrameTime());
 
-            if (frame > maxframes) frame =0;
-        }
+        // Check Map Bounds
+        if (knight.GetwolrdPos().x < 0.0f ||
+            knight.GetwolrdPos().y < 0.0f ||
+            knight.GetwolrdPos().x + WindowSize[0] > map.width * mapScale ||
+            knight.GetwolrdPos().y + WindowSize[1] > map.height * mapScale)
+                {
+                    knight.undoMovement();
+                }
 
-
-        // draw the character
-        // character's one frame rectangle
-        Rectangle source = {frame * (float)knight.width/6.0f,0.0f,rightLeft * (float)knight.width/6.0f,(float)knight.height};
-        // character's draw destination + size is * 4 because of window size
-        Rectangle dest = {knightPos.x,knightPos.y, 4.0f *knight.width/6.0f,4.0f* knight.height};
-        // the point of rotation.
-        Vector2 origin = {};
-        DrawTexturePro(knight,source,dest,origin,0.0f,WHITE);
-
-        EndDrawing();
+            EndDrawing();
     }
 
     UnloadTexture(map);
-    UnloadTexture(knight_run);
-    UnloadTexture(knight_idle);
-    UnloadTexture(knight);
-
     CloseWindow();
-    
 }
