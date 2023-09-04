@@ -2,6 +2,7 @@
 #include "raymath.h"
 #include "Character.h"
 #include "prop.h"
+#include "Enemy.h"
 
 int main()
 {
@@ -17,7 +18,23 @@ int main()
     const float mapScale = 4.0f;
 
     Character knight(WindowSize[0],WindowSize[1]);
-    Prop rock= {Vector2{0.0f,0.0f},LoadTexture("nature_tileset/Rock.png")};
+    Enemy goblin
+    {
+        Vector2{500.0f,400.0f},
+        LoadTexture("characters/goblin_idle_spritesheet.png"),
+        LoadTexture("characters/goblin_run_spritesheet.png")
+    };
+
+    goblin.SetTarget(&knight);
+
+    Prop backgrounds[2]
+    {
+        {Vector2{600.0f,300.0f}, LoadTexture("nature_tileset/Rock.png")},
+        {Vector2{400.0f,500.0f}, LoadTexture("nature_tileset/Log.png")}
+    };
+
+
+
   
     SetTargetFPS(60);
     while (!WindowShouldClose())
@@ -29,8 +46,11 @@ int main()
 
         DrawTextureEx(map, mapPos, 0.0f, mapScale, WHITE);
 
-        rock.Render(knight.GetwolrdPos());
-
+        //draw the props
+        for(auto background : backgrounds)
+        {
+            background.Render(knight.GetwolrdPos());
+        }
 
         knight.Tick(GetFrameTime());
 
@@ -42,7 +62,16 @@ int main()
                 {
                     knight.undoMovement();
                 }
+        //Check prop Collision
+        for( auto background : backgrounds)
+        {
+            if (CheckCollisionRecs(background.GetCollisionRec(knight.GetwolrdPos()),knight.GetCollisionRec()))
+            {
+                knight.undoMovement();
+            }
+        }
 
+        goblin.Tick(GetFrameTime());
             EndDrawing();
     }
 

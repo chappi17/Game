@@ -19,7 +19,8 @@ Character::~Character()
 
 void Character::Tick(float deltaTime)
 {
-    WorldPostLastFrame = worldPos;
+    BaseCharacter::Tick(deltaTime);
+
     Vector2 direction = {};
     if (IsKeyDown(KEY_A))
         direction.x -= 1.0;
@@ -42,28 +43,7 @@ void Character::Tick(float deltaTime)
         texture = idle;
     }
 
-    // update animation frame
-    runningTime += deltaTime;
-    if (runningTime >= updateTime)
-    {
-        frame++;
-        runningTime = 0.0f;
 
-        if (frame > maxframes)
-            frame = 0;
-    }
-
-    // draw the character
-    // character's one frame rectangle
-    Rectangle source = {frame * (float)width, 0.0f, rightLeft * (float)width, (float)height};
-    // character's draw destination + size is * 4 because of window size
-    Rectangle dest = {screenPos.x, screenPos.y, scale * (float)width, scale * (float)height};
-    // the point of rotation.
-    Vector2 origin = {};
-    DrawTexturePro(texture, source, dest, origin, 0.0f, WHITE);
 }
 
-void Character::undoMovement()
-{
-    worldPos = WorldPostLastFrame;
-}
+
