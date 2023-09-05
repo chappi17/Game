@@ -3,6 +3,9 @@
 #include "Character.h"
 #include "prop.h"
 #include "Enemy.h"
+#include <string>
+
+using namespace std;
 
 int main()
 {
@@ -17,25 +20,29 @@ int main()
     Vector2 mapPos = {0.0, 0.0};
     const float mapScale = 4.0f;
 
-    Character knight(WindowSize[0],WindowSize[1]);
-    Enemy goblin
-    {
-        Vector2{500.0f,400.0f},
+    Character knight(WindowSize[0], WindowSize[1]);
+    Enemy goblin{
+        Vector2{500.0f, 400.0f},
         LoadTexture("characters/goblin_idle_spritesheet.png"),
-        LoadTexture("characters/goblin_run_spritesheet.png")
-    };
+        LoadTexture("characters/goblin_run_spritesheet.png")};
 
-    goblin.SetTarget(&knight);
+    Prop backgrounds[2]{
+        {Vector2{600.0f, 300.0f}, LoadTexture("nature_tileset/Rock.png")},
+        {Vector2{400.0f, 500.0f}, LoadTexture("nature_tileset/Log.png")}};
 
-    Prop backgrounds[2]
+    Enemy slime{
+        Vector2{500.0f, 200.0f},
+        LoadTexture("characters/slime_idle_spritesheet.png"),
+        LoadTexture("characters/slime_run_spritesheet.png")};
+
+    Enemy *enemies[]{
+        &goblin,
+        &slime};
+    for (auto enemy : enemies)
     {
-        {Vector2{600.0f,300.0f}, LoadTexture("nature_tileset/Rock.png")},
-        {Vector2{400.0f,500.0f}, LoadTexture("nature_tileset/Log.png")}
-    };
+        enemy->SetTarget(&knight);
+    }
 
-
-
-  
     SetTargetFPS(60);
     while (!WindowShouldClose())
     {
@@ -46,10 +53,23 @@ int main()
 
         DrawTextureEx(map, mapPos, 0.0f, mapScale, WHITE);
 
-        //draw the props
-        for(auto background : backgrounds)
+        // draw the props
+        for (auto background : backgrounds)
         {
             background.Render(knight.GetwolrdPos());
+        }
+        bool gameiscomplete = false;
+        if (!knight.getAlive())
+        {
+            DrawText("Game Over!", 55.0f, 45.0f, 40, RED);
+            EndDrawing();
+            continue;
+        }
+        else
+        {
+            string knightHealth = "Health: ";
+            knightHealth.append(to_string(knight.getHealth()), 0, 5);
+            DrawText(knightHealth.c_str(), 55.0f, 45.0f, 40, RED);
         }
 
         knight.Tick(GetFrameTime());
@@ -59,20 +79,36 @@ int main()
             knight.GetwolrdPos().y < 0.0f ||
             knight.GetwolrdPos().x + WindowSize[0] > map.width * mapScale ||
             knight.GetwolrdPos().y + WindowSize[1] > map.height * mapScale)
-                {
-                    knight.undoMovement();
-                }
-        //Check prop Collision
-        for( auto background : backgrounds)
         {
-            if (CheckCollisionRecs(background.GetCollisionRec(knight.GetwolrdPos()),knight.GetCollisionRec()))
+            knight.undoMovement();
+        }
+        // Check prop Collision
+        for (auto background : backgrounds)
+        {
+            if (CheckCollisionRecs(background.GetCollisionRec(knight.GetwolrdPos()), knight.GetCollisionRec()))
             {
                 knight.undoMovement();
             }
         }
 
-        goblin.Tick(GetFrameTime());
-            EndDrawing();
+        for (auto enemy : enemies)
+        {
+            enemy->Tick(GetFrameTime());
+        }
+
+        // Check weapon Collision
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+        {
+
+            for (auto enemy : enemies)
+            {
+                if (CheckCollisionRecs(enemy->GetCollisionRec(), knight.GetCollisionRec()))
+                {
+                    enemy->setAlive(false);
+                }
+            }
+        }
+        EndDrawing();
     }
 
     UnloadTexture(map);
