@@ -35,6 +35,7 @@ protected:
     float height =0;
     Vector2 WorldPostLastFrame = {};
     float scale =4.0f;
+    Vector2 velocity ={}; 
 };
 
 #endif

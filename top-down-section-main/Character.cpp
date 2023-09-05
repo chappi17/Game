@@ -19,30 +19,17 @@ Character::~Character()
 
 void Character::Tick(float deltaTime)
 {
-    BaseCharacter::Tick(deltaTime);
 
-    Vector2 direction = {};
     if (IsKeyDown(KEY_A))
-        direction.x -= 1.0;
+        velocity.x -= 1.0;
     if (IsKeyDown(KEY_D))
-        direction.x += 1.0;
+        velocity.x += 1.0;
     if (IsKeyDown(KEY_W))
-        direction.y -= 1.0;
+        velocity.y -= 1.0;
     if (IsKeyDown(KEY_S))
-        direction.y += 1.0;
-    if (Vector2Length(direction) != 0.0)
-    {
-        // set worldPos = worldPos - direction
-        // set Scale = normalize(direction), speed
-        worldPos = Vector2Add(worldPos, Vector2Scale(Vector2Normalize(direction), speed));
-        direction.x < 0.0f ? rightLeft = -1.0f : rightLeft = 1.0f;
-        texture = run;
-    }
-    else
-    {
-        texture = idle;
-    }
+        velocity.y += 1.0;    
 
+    BaseCharacter::Tick(deltaTime);
 
 }
 
